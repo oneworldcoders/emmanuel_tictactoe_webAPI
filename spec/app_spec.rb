@@ -1,7 +1,8 @@
 require 'rspec'
+require 'app'
 
-RSpec.describe App do
+RSpec.describe "Tests" do
     it "asserts true" do
-        assert_equal 2, 1 + 1
+        expect(2).to eq(1 + 1)
     end
 end
