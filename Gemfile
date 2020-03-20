@@ -4,3 +4,6 @@ gem "tic_tac_toe", :git => 'https://github.com/oneworldcoders/emmanuel_tic-tac-t
 gem "rspec", "~> 3.0"
 gem "rake"
 gem "sinatra"
+gem "rerun"
+gem "rack-test"
+gem "json"

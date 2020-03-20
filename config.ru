@@ -1,2 +1,2 @@
 require "./lib/app"
-run App
+run App.new(nil, Datastore.new)
