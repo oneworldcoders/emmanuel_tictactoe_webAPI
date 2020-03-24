@@ -28,11 +28,10 @@ RSpec.describe 'The App' do
     
     it "should return array of 1 to 9 for new game" do
       game_id = 0
-      game_data = {'state': ['', '', '', '', '', '', '', '', '']}
-      @datastore.store(game_id, game_data)
+      @datastore.store(game_id, {})
 
       get "/available_moves/#{@game_id}", nil, @request_headers
-      expected_response = { 'available moves':[1, 2, 3, 4, 5, 6, 7, 8, 9] }.to_json
+      expected_response = { 'available_moves':[1, 2, 3, 4, 5, 6, 7, 8, 9] }.to_json
       
       expect(last_response).to be_ok
       expect(last_response.body).to eq(expected_response)
@@ -45,7 +44,7 @@ RSpec.describe 'The App' do
       get "/available_moves/#{@game_id}", nil, @request_headers
       @datastore.load(@game_id, :state)
 
-      expected_response = { 'available moves':[3, 4, 5, 6, 7, 8, 9] }.to_json
+      expected_response = { 'available_moves':[3, 4, 5, 6, 7, 8, 9] }.to_json
       expect(last_response).to be_ok
       expect(last_response.body).to eq(expected_response)
     end
@@ -114,11 +113,14 @@ RSpec.describe 'The App' do
         "player":1,
         "position":1
       }.to_json
-      expected_response = {"error": {"game_id": "game id must be present"}}.to_json
       post '/play', body, @request_headers
 
       expect(last_response).to be_ok
-      expect(last_response.body).to eq(expected_response)
+
+      response = JSON.parse(last_response.body)
+      expect(response).to include('error')
+      expect(response['error']).to include('game_id')
+      expect(response['error']['game_id']).to eq("game id must be present")
     end
 
     it "should validate player present" do
@@ -126,11 +128,14 @@ RSpec.describe 'The App' do
         "game_id": 0,
         "position":1
       }.to_json
-      expected_response = {"error": {"player": "player must be present"}}.to_json
       post '/play', body, @request_headers
 
       expect(last_response).to be_ok
-      expect(last_response.body).to eq(expected_response)
+      
+      response = JSON.parse(last_response.body)
+      expect(response).to include('error')
+      expect(response['error']).to include('player')
+      expect(response['error']['player']).to eq("player must be present")
     end
 
     it "should validate position present" do
@@ -138,11 +143,14 @@ RSpec.describe 'The App' do
         "game_id": 0,
         "player":1
       }.to_json
-      expected_response = {"error": {"position": "position must be present"}}.to_json
       post '/play', body, @request_headers
 
       expect(last_response).to be_ok
-      expect(last_response.body).to eq(expected_response)
+
+      response = JSON.parse(last_response.body)
+      expect(response).to include('error')
+      expect(response['error']).to include('position')
+      expect(response['error']['position']).to eq("position must be present")
     end
 
     it "should validate the position, cannot play on already played position" do
@@ -158,11 +166,12 @@ RSpec.describe 'The App' do
         "position":3
       }.to_json
       expected_response = {"error": {"position": "already occupied"}}.to_json
-      data = { "state": ["", "", "", "", "", "", "", "", ""], 'turn': 'X' }
-      @datastore.store(@game_id, data)
+      @datastore.store(@game_id, {})
 
       post '/play', body1, @request_headers
       expect(last_response).to be_ok
+
+      puts last_response.errors
 
       post '/play', body2, @request_headers
 
@@ -176,7 +185,7 @@ RSpec.describe 'The App' do
         "player":1,
         "position":1
       }.to_json
-      state_before = {'state': ["", "", "", "", "", "", "", "", ""], 'turn': "X"}
+      state_before = {'state': ["", "", "", "", "", "", "", "", ""]}
       expected_state = ["X", "", "", "", "", "", "", "", ""]
       @datastore.store(@game_id, state_before)
       post '/play', body, @request_headers
@@ -197,7 +206,7 @@ RSpec.describe 'The App' do
         "player":2,
         "position":5
       }.to_json
-      data = { "state": ["X", "", "", "", "", "", "", "", ""], 'turn': 'X' }
+      data = { "state": ["X", "", "", "", "", "", "", "", ""]}
       @datastore.store(@game_id, data)
 
       expected_state = ["X", "", "X", "", "O", "", "", "", ""]
@@ -288,6 +297,15 @@ RSpec.describe 'The App' do
       expect(response2).to be_ok
       expect(state2).to eq(expected_state2)
     end
+
+    it "should return the state in json" do
+      body = { "game_id": @game_id, "player":1, "position":1 }.to_json
+      @datastore.store(@game_id, {})
+      post '/play', body, @request_headers
+      expected_response = {game: ["X", "", "", "", "", "", "", "", ""]}.to_json
+      expect(last_response).to be_ok
+      expect(last_response.body).to eq(expected_response)
+    end
   end
 
   context "Turns" do
@@ -308,7 +326,7 @@ RSpec.describe 'The App' do
         "position":3
       }.to_json
 
-      data = {'state': ['', '', '', '', '', '', '', ''], 'turn': "O"}
+      data = {'turn': "O"}
       @datastore.store(@game_id, data)
       turn_before = @datastore.load(@game_id, :turn)
 
@@ -327,7 +345,7 @@ RSpec.describe 'The App' do
         "position":3
       }.to_json
 
-      data = {'state': ['', '', '', '', '', '', '', '', ''] ,'turn': "X"}
+      data = {'turn': "X"}
       @datastore.store(@game_id, data)
       turn_before = @datastore.load(@game_id, :turn)
       expect(turn_before).to eq("X")      
@@ -338,10 +356,13 @@ RSpec.describe 'The App' do
       expect(last_response).to be_ok
       expect(turn_after).to eq("O") 
 
-      expected_response = {"error": {"turn": "wrong turn"}}.to_json
       post '/play', body, @request_headers
       expect(last_response).to be_ok
-      expect(last_response.body).to eq(expected_response)
+
+      response = JSON.parse(last_response.body)
+      expect(response).to include('error')
+      expect(response['error']).to include('turn')
+      expect(response['error']['turn']).to eq("wrong turn")
     end
 
     it "should return X for a new game" do

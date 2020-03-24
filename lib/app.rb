@@ -24,49 +24,50 @@ class App < Sinatra::Base
         content_type :json
     end
 
+    after do
+        response.body = JSON.dump(response.body)
+    end
+
     get '/games' do
-        {"games":@datastore.load_all()}.to_json
+        {games: @datastore.load_all()}
     end
 
     get '/' do
-        {'message':@output.welcome}.to_json
+        {message: @output.welcome}
     end
 
     get '/available_moves/:game_id' do
         game_id = params['game_id'].to_i
-        if @validate.validate_available_moves(game_id, @datastore)
-            @game.state = @datastore.load(game_id, :state)
-            return {'available moves':@game.available_moves}.to_json
-        else
-            return @validate.message.to_json
-        end
+        return @validate.message unless @validate.game_started?(game_id, @datastore)
+        @game.state = @datastore.load(game_id, :state)
+        return {available_moves: @game.available_moves}
     end
 
     post '/startgame' do
         payload = JSON.parse(request.body.read)
         game_id = payload['game_id']
 
-        return @validate.message.to_json unless @validate.validate_startgame(game_id, @datastore)
+        return @validate.message unless @validate.validate_startgame(game_id, @datastore)
         
         data = {'state': @game.state, 'turn': @turn.get_turn}
         @datastore.store(game_id, data)
         return {
-            "messgae":"game started successfully",
-            "game_id":game_id,
-            "game_data": data
-        }.to_json
+            messgae:"game started successfully",
+            game_id:game_id,
+            game_data: data
+        }
     end
 
     get '/turn/:game_id' do
         game_id = params['game_id'].to_i
-        return @validate.message.to_json if !@validate.validate_turns(game_id, @datastore)
-        {"turn": @datastore.load(game_id, :turn)}.to_json
+        return @validate.message unless @validate.validate_turns(game_id, @datastore)
+        {turn: @datastore.load(game_id, :turn)}
     end
 
     post '/play' do
         payload = JSON.parse(request.body.read)
 
-        return @validate.message.to_json if !@validate.validate_play(payload, @datastore)
+        return @validate.message unless @validate.validate_play(payload, @datastore)
 
         player = Player.create_player(payload['player'])
         position = payload['position']
@@ -81,10 +82,10 @@ class App < Sinatra::Base
         @datastore.store(game_id, data)
 
         if @game.check_win(player.get_mark)
-            return {'win':"player #{payload['player']}"}.to_json
+            return {'win':"player #{payload['player']}"}
         end
 
-        @game.board_as_string
+        {game: @game.state}
     end
 
 end
