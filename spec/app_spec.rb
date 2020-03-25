@@ -11,7 +11,7 @@ RSpec.describe 'The App' do
   include Rack::Test::Methods
 
   def app
-    App.new(nil, @datastore, FakeTurn.new, FakeOutput.new)
+    App.new(nil, @datastore, FakeTurn.new)
   end
 
   before(:each) do
@@ -244,7 +244,7 @@ RSpec.describe 'The App' do
 
       data = { "state": ["X", "X", "", "", "", "", "", "", ""], 'turn': "X" }
       @datastore.store(@game_id, data)
-      expected_response = {'win':'player 1'}.to_json
+      expected_response = {'win': "Player 1 is Winner"}.to_json
 
       post '/play', body, @request_headers
 
@@ -261,7 +261,7 @@ RSpec.describe 'The App' do
 
       data = { "state": ["O", "O", "", "", "", "", "", "", ""], 'turn': 'O' }
       @datastore.store(@game_id, data)
-      expected_response = {'win':'player 2'}.to_json
+      expected_response = {'win': "Player 2 is Winner"}.to_json
 
       post '/play', body, @request_headers
 

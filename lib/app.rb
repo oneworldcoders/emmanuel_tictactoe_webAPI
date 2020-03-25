@@ -11,17 +11,17 @@ require "json"
 
 class App < Sinatra::Base
 
-    def initialize(app=nil, datastore={}, turn=TicTacToe::Turn.new, output = Output.new, game=TicTacToe::Game.new, validate=Validate.new)
+    def initialize(app=nil, datastore={}, turn=TicTacToe::Turn.new, output = Output.new, game=TicTacToe::Game.new)
         super(app)
         @datastore = datastore
         @turn = turn
         @game = game
         @output = output
-        @validate = validate
     end
 
     before do
         content_type :json
+        @validate=Validate.new
     end
 
     after do
@@ -33,6 +33,9 @@ class App < Sinatra::Base
     end
 
     get '/' do
+        payload = JSON.parse(request.body.read)
+        lang = payload['lang']
+        @output.set_language(lang)
         {message: @output.welcome}
     end
 
@@ -66,6 +69,8 @@ class App < Sinatra::Base
 
     post '/play' do
         payload = JSON.parse(request.body.read)
+        lang = payload['lang']
+        @output.set_language(lang)
 
         return @validate.message unless @validate.validate_play(payload, @datastore)
 
@@ -81,11 +86,8 @@ class App < Sinatra::Base
         data = {'state': @game.state, 'turn': @turn.get_turn}
         @datastore.store(game_id, data)
 
-        if @game.check_win(player.get_mark)
-            return {'win':"player #{payload['player']}"}
-        end
-
-        {game: @game.state}
+        return {win: @output.get_winner_text(payload['player'])} if @game.check_win(player.get_mark)
+        return {game: @game.state}
     end
 
 end

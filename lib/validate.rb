@@ -5,23 +5,23 @@ class Validate
         @message = {"error": {}}
     end
 
-    def return_status
+    def determine_return_status
         @message[:error].size > 0 ? false : true
     end
 
     def validate_startgame(game_id, datastore)
         @message[:error].store("game", "game #{game_id} already exists") if datastore.has_key?(game_id)
-        return_status
+        determine_return_status
     end
 
     def game_started?(game_id, datastore)
         @message[:error].store("game", "game #{game_id} hasn't yet started") if !datastore.has_key?(game_id)
-        return_status
+        determine_return_status
     end
 
     def validate_turns(game_id, datastore)
         @message[:error].store("turn", "game #{game_id} not started") if !datastore.has_key?(game_id)
-        return_status
+        determine_return_status
     end
 
     def validate_play(payload, datastore)
@@ -31,7 +31,7 @@ class Validate
         @message[:error].store('game', "game hasn't yet started") if !datastore.has_key?(payload['game_id'])
         @message[:error].store('turn', "wrong turn") if !validate_turn(payload, datastore)
         @message[:error].store('position', "already occupied") if !validate_position(payload, datastore)
-        return_status
+        determine_return_status
     end
 
     def validate_turn(payload, datastore)
