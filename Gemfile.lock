@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/oneworldcoders/emmanuel_tic-tac-toe.git
-  revision: 8ab600f188d4f5d70b153e4799fefc74fc94f08a
+  revision: 280f742810ada2fe9f1905fe3a5116971192780a
   specs:
     tic_tac_toe (1.0.0)
 
