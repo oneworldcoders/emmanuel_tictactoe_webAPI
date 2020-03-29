@@ -1,0 +1,17 @@
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+  
+Style/Documentation:
+  Enabled: false
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
