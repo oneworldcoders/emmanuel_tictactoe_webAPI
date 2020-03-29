@@ -1,7 +1,5 @@
 require 'app'
-require 'datastore'
-require 'fake_turn'
-require 'fake_output'
+require 'web_game'
 
 require 'rack/test'
 require 'rspec'
@@ -11,38 +9,38 @@ RSpec.describe 'The App' do
   include Rack::Test::Methods
 
   def app
-    App.new(nil, @datastore, FakeTurn.new)
+    App.new(nil, @web_game)
   end
 
   before(:each) do
     @game_id = 0
-    @datastore = Datastore.new
+    @web_game = WebGame.new
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
 
   after(:each) do
-    @datastore.clear
+    @web_game.clear_all
   end
 
   context "Available moves" do
     
     it "should return array of 1 to 9 for new game" do
-      game_id = 0
-      @datastore.store(game_id, {})
+      data = {0 => {}}
+      @web_game.store(data)
 
       get "/available_moves/#{@game_id}", nil, @request_headers
       expected_response = { 'available_moves':[1, 2, 3, 4, 5, 6, 7, 8, 9] }.to_json
-      
+
       expect(last_response).to be_ok
       expect(last_response.body).to eq(expected_response)
     end
 
     it "should return array of 3 to 9 for a game with 2 plays" do
-      data = {'state': ["X", "O", "", "", "", "", "", "", ""]}
-      @datastore.store(@game_id, data)
+      data = { @game_id=> {'state': ["X", "O", "", "", "", "", "", "", ""]} }
+      @web_game.store(data)
 
       get "/available_moves/#{@game_id}", nil, @request_headers
-      @datastore.load(@game_id, :state)
+      @web_game.load_state(@game_id)
 
       expected_response = { 'available_moves':[3, 4, 5, 6, 7, 8, 9] }.to_json
       expect(last_response).to be_ok
@@ -64,25 +62,26 @@ RSpec.describe 'The App' do
       post '/startgame', @body, @request_headers
     end
 
-    it "responds with the game Id" do
-      expected_response = {"game_id":@game_id}.to_json
+    it "responds with the game data" do
+      expected_response = {"game_data"=> {"#{@game_id}"=> {"state"=> ['','','','','','','','',''], "turn"=> "X" } } }
       expect(last_response).to be_ok
-      expect(last_response.body['game_id']).to eq(expected_response['game_id'])
+      response = JSON.parse(last_response.body)
+      expect(response["game_data"]).to eq(expected_response["game_data"])
     end
 
-    it "adds the game to the datastore" do
+    it "adds the game to the web game" do
       expect(last_response).to be_ok
-      expect(@datastore.load(@game_id, :state)).to be
+      expect(@web_game.load_state(@game_id)).not_to be_nil
     end
 
-    it "adds a new state and turn X to the datastore" do
+    it "adds a new state and turn X to the game" do
       expected_response = {
         'state': ['','','','','','','','',''],
         'turn': 'X'
       }
       expect(last_response).to be_ok
-      expect(@datastore.load(@game_id, :state)).to eq(expected_response[:state])
-      expect(@datastore.load(@game_id, :turn)).to eq(expected_response[:turn])
+      expect(@web_game.load_state(@game_id)).to eq(expected_response[:state])
+      expect(@web_game.load_turn(@game_id)).to eq(expected_response[:turn])
     end
 
     it "should return an error if you start a game which is already started" do
@@ -154,26 +153,17 @@ RSpec.describe 'The App' do
     end
 
     it "should validate the position, cannot play on already played position" do
-      body1 = {
+      body = {
         "game_id":@game_id,
         "player":1,
         "position":3
       }.to_json
 
-      body2 = {
-        "game_id":@game_id,
-        "player":2,
-        "position":3
-      }.to_json
       expected_response = {"error": {"position": "already occupied"}}.to_json
-      @datastore.store(@game_id, {})
+      @web_game.store({@game_id=> {'state': ['','','X','','','','','','']}})
 
-      post '/play', body1, @request_headers
-      expect(last_response).to be_ok
-
-      puts last_response.errors
-
-      post '/play', body2, @request_headers
+      post '/play', body, @request_headers
+      response = JSON.parse(last_response.body)
 
       expect(last_response).to be_ok
       expect(last_response.body).to eq(expected_response)
@@ -187,11 +177,11 @@ RSpec.describe 'The App' do
       }.to_json
       state_before = {'state': ["", "", "", "", "", "", "", "", ""]}
       expected_state = ["X", "", "", "", "", "", "", "", ""]
-      @datastore.store(@game_id, state_before)
+      @web_game.store({@game_id=> state_before})
       post '/play', body, @request_headers
 
       expect(last_response).to be_ok
-      expect(@datastore.load(@game_id, :state)).to eq(expected_state)
+      expect(@web_game.load_state(@game_id)).to eq(expected_state)
     end
 
     it "should store multiple moves" do
@@ -207,7 +197,7 @@ RSpec.describe 'The App' do
         "position":5
       }.to_json
       data = { "state": ["X", "", "", "", "", "", "", "", ""]}
-      @datastore.store(@game_id, data)
+      @web_game.store({@game_id=> data})
 
       expected_state = ["X", "", "X", "", "O", "", "", "", ""]
 
@@ -215,7 +205,7 @@ RSpec.describe 'The App' do
       post '/play', body2, @request_headers
 
       expect(last_response).to be_ok
-      expect(@datastore.load(@game_id, :state)).to eq(expected_state)
+      expect(@web_game.load_state(@game_id)).to eq(expected_state)
     end
 
     it "should play O for player 2" do
@@ -226,13 +216,13 @@ RSpec.describe 'The App' do
       }.to_json
       data = { "state": ["X", "", "", "", "", "", "", "", ""], 'turn': 'O' }
 
-      @datastore.store(@game_id, data)
+      @web_game.store({@game_id=> data})
       expected_state = ["X", "", "O", "", "", "", "", "", ""]
 
       post '/play', body, @request_headers
 
       expect(last_response).to be_ok
-      expect(@datastore.load(@game_id, :state)).to eq(expected_state)
+      expect(@web_game.load_state(@game_id)).to eq(expected_state)
     end
 
     it "should return a win for player 1" do
@@ -243,7 +233,7 @@ RSpec.describe 'The App' do
       }.to_json
 
       data = { "state": ["X", "X", "", "", "", "", "", "", ""], 'turn': "X" }
-      @datastore.store(@game_id, data)
+      @web_game.store({@game_id=> data})
       expected_response = {'win': "Player 1 is Winner"}.to_json
 
       post '/play', body, @request_headers
@@ -260,7 +250,7 @@ RSpec.describe 'The App' do
       }.to_json
 
       data = { "state": ["O", "O", "", "", "", "", "", "", ""], 'turn': 'O' }
-      @datastore.store(@game_id, data)
+      @web_game.store({@game_id=> data})
       expected_response = {'win': "Player 2 is Winner"}.to_json
 
       post '/play', body, @request_headers
@@ -277,16 +267,16 @@ RSpec.describe 'The App' do
       body2 = { "game_id": game_id2, "player":2, "position":2 }.to_json
 
       data = { "state": ["", "", "", "", "", "", "", "", ""], 'turn': 'X' }
-      @datastore.store(game_id1, data)
+      @web_game.store({game_id1=> data})
 
       data = { "state": ["", "", "", "", "", "", "", "", ""], 'turn': 'O' }
-      @datastore.store(game_id2, data)
+      @web_game.store({game_id2=> data})
 
       response1 = post '/play', body1, @request_headers
       response2 = post '/play', body2, @request_headers
 
-      state1 = @datastore.load(game_id1, :state)
-      state2 = @datastore.load(game_id2, :state)
+      state1 = @web_game.load_state(game_id1)
+      state2 = @web_game.load_state(game_id2)
 
       expected_state1 = ["X", "", "", "", "", "", "", "", ""]
       expected_state2 = ["", "O", "", "", "", "", "", "", ""]
@@ -300,7 +290,7 @@ RSpec.describe 'The App' do
 
     it "should return the state in json" do
       body = { "game_id": @game_id, "player":1, "position":1 }.to_json
-      @datastore.store(@game_id, {})
+      @web_game.store({@game_id=> {}})
       post '/play', body, @request_headers
       expected_response = {game: ["X", "", "", "", "", "", "", "", ""]}.to_json
       expect(last_response).to be_ok
@@ -313,7 +303,7 @@ RSpec.describe 'The App' do
       body = { 'game_id': @game_id }.to_json
       post '/startgame', body, @request_headers
 
-      turn_before = @datastore.load(@game_id, :turn)
+      turn_before = @web_game.load_turn(@game_id)
 
       expect(last_response).to be_ok
       expect(turn_before).to eq("X")        
@@ -327,11 +317,11 @@ RSpec.describe 'The App' do
       }.to_json
 
       data = {'turn': "O"}
-      @datastore.store(@game_id, data)
-      turn_before = @datastore.load(@game_id, :turn)
+      @web_game.store({@game_id=> data})
+      turn_before = @web_game.load_turn(@game_id)
 
       post '/play', body, @request_headers
-      turn_after = @datastore.load(@game_id, :turn)
+      turn_after = @web_game.load_turn(@game_id)
 
       expect(last_response).to be_ok
       expect(turn_before).to eq("O")      
@@ -346,12 +336,12 @@ RSpec.describe 'The App' do
       }.to_json
 
       data = {'turn': "X"}
-      @datastore.store(@game_id, data)
-      turn_before = @datastore.load(@game_id, :turn)
+      @web_game.store({@game_id=> data})
+      turn_before = @web_game.load_turn(@game_id)
       expect(turn_before).to eq("X")      
 
       post '/play', body, @request_headers
-      turn_after = @datastore.load(@game_id, :turn)
+      turn_after = @web_game.load_turn(@game_id)
       
       expect(last_response).to be_ok
       expect(turn_after).to eq("O") 
@@ -367,7 +357,7 @@ RSpec.describe 'The App' do
 
     it "should return X for a new game" do
       data = {'turn': 'X'}
-      @datastore.store(@game_id, data)
+      @web_game.store({@game_id=> data})
       get "/turn/#{@game_id}", nil, @request_headers
       expected_response = {"turn": "X"}.to_json
       expect(last_response).to be_ok
@@ -376,7 +366,7 @@ RSpec.describe 'The App' do
 
     it "should return O for O's turn" do
       data = {'turn': 'O'}
-      @datastore.store(@game_id, data)
+      @web_game.store({@game_id=> data})
       get "/turn/#{@game_id}", nil, @request_headers
 
       expected_response = {"turn": "O"}.to_json
@@ -402,7 +392,7 @@ RSpec.describe 'The App' do
 
     it "should return a hash of 1 game created" do
       default_data = {'state': ['', '', '', '', '', '', '', '', ''] ,'turn': "X"}
-      @datastore.store(@game_id, default_data)
+      @web_game.store({@game_id=> default_data})
       get '/games', nil, @request_headers
       expected_response = {"games": {@game_id => default_data}}.to_json
       expect(last_response).to be_ok
@@ -411,8 +401,8 @@ RSpec.describe 'The App' do
 
     it "should return a hash of multiple games created" do
       default_data = {'state': ['', '', '', '', '', '', '', '', ''] ,'turn': "X"}
-      @datastore.store(@game_id, default_data)
-      @datastore.store(@game_id+1, default_data)
+      @web_game.store({@game_id=> default_data})
+      @web_game.store({@game_id+1=> default_data})
       get '/games', nil, @request_headers
       expected_response = {
         "games": {

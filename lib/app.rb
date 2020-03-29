@@ -1,21 +1,18 @@
 require "tic_tac_toe"
+require 'sinatra'
+require "json"
 
-require_relative 'datastore'
 require_relative 'player'
 require_relative 'output'
 require_relative 'validate'
-
-require 'sinatra'
-require "json"
+require_relative 'web_game'
 
 
 class App < Sinatra::Base
 
-    def initialize(app=nil, datastore={}, turn=TicTacToe::Turn.new, output = Output.new, game=TicTacToe::Game.new)
+    def initialize(app=nil, web_game=WebGame.new, output = Output.new)
         super(app)
-        @datastore = datastore
-        @turn = turn
-        @game = game
+        @web_game = web_game
         @output = output
     end
 
@@ -29,42 +26,39 @@ class App < Sinatra::Base
     end
 
     get '/games' do
-        {games: @datastore.load_all()}
+        return {games: @web_game.load_all()}
     end
 
     get '/' do
-        payload = JSON.parse(request.body.read)
+        payload = request.body.read.empty? ? {} : JSON.parse(request.body.read)
         lang = payload['lang']
         @output.set_language(lang)
-        {message: @output.welcome}
+        return {message: @output.welcome}
     end
 
     get '/available_moves/:game_id' do
         game_id = params['game_id'].to_i
-        return @validate.message unless @validate.game_started?(game_id, @datastore)
-        @game.state = @datastore.load(game_id, :state)
-        return {available_moves: @game.available_moves}
+        return @validate.message unless @validate.game_started?(game_id, @web_game)
+        @web_game.load_state(game_id)
+        return {available_moves: @web_game.available_moves}
     end
 
     post '/startgame' do
         payload = JSON.parse(request.body.read)
         game_id = payload['game_id']
 
-        return @validate.message unless @validate.validate_startgame(game_id, @datastore)
-        
-        data = {'state': @game.state, 'turn': @turn.get_turn}
-        @datastore.store(game_id, data)
+        return @validate.message unless @validate.validate_startgame(game_id, @web_game)
+        @web_game.start_game(game_id)
         return {
-            messgae:"game started successfully",
-            game_id:game_id,
-            game_data: data
+            messgae: "game started successfully",
+            game_data: {"#{game_id}": @web_game.get_game(game_id) } 
         }
     end
 
     get '/turn/:game_id' do
         game_id = params['game_id'].to_i
-        return @validate.message unless @validate.validate_turns(game_id, @datastore)
-        {turn: @datastore.load(game_id, :turn)}
+        return @validate.message unless @validate.validate_turns(game_id, @web_game)
+        return {turn: @web_game.load_turn(game_id)}
     end
 
     post '/play' do
@@ -72,22 +66,20 @@ class App < Sinatra::Base
         lang = payload['lang']
         @output.set_language(lang)
 
-        return @validate.message unless @validate.validate_play(payload, @datastore)
+        return @validate.message unless @validate.validate_play(payload, @web_game)
 
         player = Player.create_player(payload['player'])
         position = payload['position']
         game_id = payload['game_id']
         
-        @game.state = @datastore.load(game_id, :state)
-        @turn.set_turn(@datastore.load(game_id, :turn))
+        @web_game.load_state(game_id)
+        @web_game.load_turn(game_id)
+        @web_game.play(player, position)
+        @web_game.switch_turn(game_id)
+        @web_game.save_game(game_id)
 
-        player.play(position, @game)
-        @turn.switch_turn
-        data = {'state': @game.state, 'turn': @turn.get_turn}
-        @datastore.store(game_id, data)
-
-        return {win: @output.get_winner_text(payload['player'])} if @game.check_win(player.get_mark)
-        return {game: @game.state}
+        return {win: @output.get_winner_text(payload['player'])} if @web_game.check_win(game_id, player)
+        return {game: @web_game.load_state(game_id)}
     end
 
 end

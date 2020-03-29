@@ -1,10 +1,10 @@
-require_relative 'null_datastore'
+require_relative 'default_game'
 
 class Datastore
 
     def initialize(data={})
         @data = data
-        @null_datastore = NullDatastore.new
+        @default_game = DefaultGame.new
     end
 
     def clear
@@ -19,8 +19,12 @@ class Datastore
         @data.store(key, value)
     end
 
+    def load_game(game_id)
+        @data.dig(game_id) || @default_game.load_game(game_id)
+    end
+
     def load(game_id, key)
-        @data.dig(game_id, key)|| @null_datastore.load(game_id, key)
+        @data.dig(game_id, key) || @default_game.load_game(game_id)[key]
     end
 
     def load_all
