@@ -15,7 +15,11 @@ class Datastore
   end
 
   def store(key, value)
-    @data.store(key, value)
+    if value
+      @data.store(key, value)
+    else
+      @data.store(key, @default_game.load_game(key))
+    end
   end
 
   def load_game(game_id)

@@ -18,6 +18,10 @@ class Output
   def get_winner_text(player)
     player == 1 ? @output.get_player1_win_text : @output.get_player2_win_text
   end
+
+  def draw_text
+    @output.get_draw_text
+  end
 end
 
 class Lang
