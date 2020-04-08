@@ -1,11 +1,11 @@
-require 'tic_tac_toe'
-require 'sinatra'
-require 'json'
+require "tic_tac_toe"
+require "sinatra"
+require "json"
 
-require_relative 'player'
-require_relative 'output'
-require_relative 'validate'
-require_relative 'web_game'
+require_relative "player"
+require_relative "output"
+require_relative "validate"
+require_relative "web_game"
 
 class App < Sinatra::Base
   def initialize(app = nil, web_game = WebGame.new, output = Output.new)
@@ -14,28 +14,33 @@ class App < Sinatra::Base
     @output = output
   end
 
+  configure do
+    enable :cross_origin
+  end
+
   before do
     content_type :json
     @validate = Validate.new
+    response.headers["Access-Control-Allow-Origin"] = "*"
   end
 
   after do
     response.body = JSON.dump(response.body)
   end
 
-  get '/games' do
+  get "/games" do
     return { games: @web_game.load_all }
   end
 
-  get '/' do
+  get "/" do
     payload = request.body.read.empty? ? {} : JSON.parse(request.body.read)
-    lang = payload['lang']
+    lang = payload["lang"]
     @output.update_language(lang)
     return { message: @output.welcome }
   end
 
-  get '/available_moves/:game_id' do
-    game_id = params['game_id'].to_i
+  get "/available_moves/:game_id" do
+    game_id = params["game_id"].to_i
     unless @validate.validate_game_started(game_id, @web_game)
       return @validate.message
     end
@@ -44,9 +49,9 @@ class App < Sinatra::Base
     return { available_moves: @web_game.available_moves }
   end
 
-  post '/startgame' do
+  post "/startgame" do
     payload = JSON.parse(request.body.read)
-    game_id = payload['game_id']
+    game_id = payload["game_id"]
 
     unless @validate.validate_startgame(game_id, @web_game)
       return @validate.message
@@ -54,28 +59,28 @@ class App < Sinatra::Base
 
     @web_game.start_game(game_id)
     return {
-      messgae: 'game started successfully',
-      game_data: { "#{game_id}": @web_game.get_game(game_id) }
-    }
+             messgae: "game started successfully",
+             game_data: { "#{game_id}": @web_game.get_game(game_id) },
+           }
   end
 
-  get '/turn/:game_id' do
-    game_id = params['game_id'].to_i
+  get "/turn/:game_id" do
+    game_id = params["game_id"].to_i
     return @validate.message unless @validate.validate_turns(game_id, @web_game)
 
     return { turn: @web_game.load_turn(game_id) }
   end
 
-  post '/play' do
+  post "/play" do
     payload = JSON.parse(request.body.read)
-    lang = payload['lang']
+    lang = payload["lang"]
     @output.update_language(lang)
 
     return @validate.message unless @validate.validate_play(payload, @web_game)
 
-    player = Player.create_player(payload['player'])
-    position = payload['position']
-    game_id = payload['game_id']
+    player = Player.create_player(payload["player"])
+    position = payload["position"]
+    game_id = payload["game_id"]
 
     @web_game.load_state(game_id)
     @web_game.load_turn(game_id)
@@ -85,11 +90,17 @@ class App < Sinatra::Base
 
 
     if @web_game.draw?(game_id)
-      { draw: @output.draw_text }
+      { game: @web_game.load_state(game_id),draw: @output.draw_text }
     elsif @web_game.check_win(game_id, player)
-      { win: @output.get_winner_text(payload['player']) }
+      { game: @web_game.load_state(game_id),win: @output.get_winner_text(payload["player"]) }
     else
       { game: @web_game.load_state(game_id) }
     end
+  end
+  options "*" do
+    response.headers["Allow"] = "GET, PUT, POST, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-User-Email, X-Auth-Token"
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    200
   end
 end
