@@ -83,6 +83,7 @@ class App < Sinatra::Base
     @web_game.switch_turn(game_id)
     @web_game.save_game(game_id)
 
+
     if @web_game.draw?(game_id)
       { draw: @output.draw_text }
     elsif @web_game.check_win(game_id, player)
