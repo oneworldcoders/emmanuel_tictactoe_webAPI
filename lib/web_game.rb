@@ -1,15 +1,18 @@
-require_relative 'datastore'
-require 'tic_tac_toe'
+require_relative "datastore"
+require "tic_tac_toe"
+require_relative "player"
 
 class WebGame
   def initialize(
     datastore = Datastore.new,
     game = TicTacToe::Game.new,
-    turn = TicTacToe::Turn.new
+    turn = TicTacToe::Turn.new,
+    uuid = UUID.new
   )
     @datastore = datastore
     @game = game
     @turn = turn
+    @uuid = uuid
   end
 
   def load_state(game_id)
@@ -33,18 +36,29 @@ class WebGame
     store(data)
   end
 
-  def start_game(game_id)
+  def start_game(game_id = @uuid.generate)
     data = { game_id => nil }
     store(data)
+    return game_id
   end
 
   def get_game(game_id)
     @datastore.load_game(game_id)
   end
 
-  def check_win(game_id, player)
+  def check_win(game_id, currentPlayer)
+    players = [[1,Player.create_player(1)], [2,Player.create_player(2)]]
     load_state(game_id)
-    @game.check_win(player.get_mark)
+    players.each do |player|
+      if player[1] && @game.check_win(player[1].get_mark)
+        return player[0] 
+      end
+    end
+    false
+  end
+
+  def game_end?(game_id, player)
+    check_win(game_id, player) || draw?(game_id)
   end
 
   def draw?(game_id)
@@ -68,7 +82,7 @@ class WebGame
 
   def switch_turn(game_id)
     @turn.switch_turn
-    data = { game_id => { 'turn' => @turn.get_turn } }
+    data = { game_id => { "turn" => @turn.get_turn } }
     store(data)
   end
 

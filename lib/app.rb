@@ -1,6 +1,7 @@
 require "tic_tac_toe"
 require "sinatra"
 require "json"
+require "uuid"
 
 require_relative "player"
 require_relative "output"
@@ -50,17 +51,10 @@ class App < Sinatra::Base
   end
 
   post "/startgame" do
-    payload = JSON.parse(request.body.read)
-    game_id = payload["game_id"]
-
-    unless @validate.validate_startgame(game_id, @web_game)
-      return @validate.message
-    end
-
-    @web_game.start_game(game_id)
+    id = @web_game.start_game()
     return {
              messgae: "game started successfully",
-             game_data: { "#{game_id}": @web_game.get_game(game_id) },
+             game_data: { "#{id}": @web_game.get_game(id) },
            }
   end
 
@@ -82,21 +76,24 @@ class App < Sinatra::Base
     position = payload["position"]
     game_id = payload["game_id"]
 
-    @web_game.load_state(game_id)
-    @web_game.load_turn(game_id)
-    @web_game.play(player, position)
-    @web_game.switch_turn(game_id)
-    @web_game.save_game(game_id)
+    if !@web_game.game_end?(game_id, player)
+      @web_game.load_state(game_id)
+      @web_game.load_turn(game_id)
+      @web_game.play(player, position)
+      @web_game.switch_turn(game_id)
+      @web_game.save_game(game_id)
+    end
 
 
     if @web_game.draw?(game_id)
-      { game: @web_game.load_state(game_id),draw: @output.draw_text }
-    elsif @web_game.check_win(game_id, player)
-      { game: @web_game.load_state(game_id),win: @output.get_winner_text(payload["player"]) }
+      { game: @web_game.load_state(game_id), draw: @output.draw_text }
+    elsif currentPlayer=@web_game.check_win(game_id, player)
+      { game: @web_game.load_state(game_id), win: @output.get_winner_text(currentPlayer) }
     else
       { game: @web_game.load_state(game_id) }
     end
   end
+
   options "*" do
     response.headers["Allow"] = "GET, PUT, POST, DELETE, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-User-Email, X-Auth-Token"

@@ -1,5 +1,7 @@
+require "tic_tac_toe"
 require 'app'
 require 'web_game'
+require 'fake_uuid'
 
 require 'rack/test'
 require 'rspec'
@@ -12,8 +14,13 @@ describe 'The App' do
   end
 
   before(:each) do
-    @game_id = 0
-    @web_game = WebGame.new
+    @game_id = "123ert567"
+    @web_game = WebGame.new(
+      datastore = Datastore.new,
+      game = TicTacToe::Game.new,
+      turn = TicTacToe::Turn.new,
+      uuid = FakeUUID.new
+    )
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
 
@@ -36,6 +43,7 @@ describe 'The App' do
           }
         }
       }
+      puts last_response.errors
       expect(last_response).to be_ok
       response = JSON.parse(last_response.body)
       expect(response['game_data']).to eq(expected_response['game_data'])
@@ -54,15 +62,6 @@ describe 'The App' do
       expect(last_response).to be_ok
       expect(@web_game.load_state(@game_id)).to eq(expected_response[:state])
       expect(@web_game.load_turn(@game_id)).to eq(expected_response[:turn])
-    end
-
-    it 'should return an error if you start a game which is already started' do
-      post '/startgame', @body, @request_headers
-      expected_response = { "error": {
-        "game": "game #{@game_id} already exists"
-      } }.to_json
-      expect(last_response).to be_ok
-      expect(last_response.body).to eq(expected_response)
     end
   end
 end
