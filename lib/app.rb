@@ -83,7 +83,10 @@ class App < Sinatra::Base
     @web_game.switch_turn(game_id)
     @web_game.save_game(game_id)
 
-    if @web_game.check_win(game_id, player)
+
+    if @web_game.draw?(game_id)
+      { draw: @output.draw_text }
+    elsif @web_game.check_win(game_id, player)
       { win: @output.get_winner_text(payload['player']) }
     else
       { game: @web_game.load_state(game_id) }

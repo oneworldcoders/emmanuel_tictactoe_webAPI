@@ -121,6 +121,17 @@ describe 'The App' do
       expect(last_response.body).to eq(expected_response)
     end
 
+    it 'should return a draw' do
+      data = {
+        "state": ['X', 'X', '', 'O', 'O', 'X', 'O', 'X', 'O'], 'turn': 'O'
+      }
+      @web_game.store({ @game_id => data })
+      expected_response = { 'draw': 'Draw' }.to_json
+      post '/play', @body2, @request_headers
+      expect(last_response).to be_ok
+      expect(last_response.body).to eq(expected_response)
+    end
+
     it 'should be able to handle 2 different games' do
       game_id1 = 1
       game_id2 = 2

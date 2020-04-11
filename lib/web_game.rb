@@ -47,6 +47,11 @@ class WebGame
     @game.check_win(player.get_mark)
   end
 
+  def draw?(game_id)
+    load_state(game_id)
+    @game.draw?
+  end
+
   def game?(game_id)
     @datastore.key?(game_id)
   end
