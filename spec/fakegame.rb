@@ -1,15 +1,11 @@
 class FakeGame
   attr_accessor :state
 
-  def initialize()
+  def initialize
     @state = nil
   end
 
-  def state()
+  def check_win(_player = nil)
     true
-  end
-
-  def check_win(player = nil)
-    return true
   end
 end

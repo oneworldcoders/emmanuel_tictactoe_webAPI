@@ -1,4 +1,4 @@
-require "tic_tac_toe"
+require 'tic_tac_toe'
 require 'app'
 require 'web_game'
 require 'fake_uuid'
@@ -14,12 +14,12 @@ describe 'The App' do
   end
 
   before(:each) do
-    @game_id = "123ert567"
+    @game_id = '123ert567'
     @web_game = WebGame.new(
-      datastore = Datastore.new,
-      game = TicTacToe::Game.new,
-      turn = TicTacToe::Turn.new,
-      uuid = FakeUUID.new
+      Datastore.new,
+      TicTacToe::Game.new,
+      TicTacToe::Turn.new,
+      FakeUUID.new
     )
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
@@ -43,7 +43,6 @@ describe 'The App' do
           }
         }
       }
-      puts last_response.errors
       expect(last_response).to be_ok
       response = JSON.parse(last_response.body)
       expect(response['game_data']).to eq(expected_response['game_data'])
