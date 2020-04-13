@@ -106,7 +106,8 @@ describe 'The App' do
     it 'should return a win for player 1' do
       data = { "state": ['', 'X', 'X', '', '', '', '', '', ''], 'turn': 'X' }
       @web_game.store({ @game_id => data })
-      expected_response = { 'win': 'Player 1 is Winner' }.to_json
+      expected_response = { "game": ['X', 'X', 'X', '', '', '', '', '', ''],
+                            'win': 'Player 1 is Winner' }.to_json
       post '/play', @body1, @request_headers
       expect(last_response).to be_ok
       expect(last_response.body).to eq(expected_response)
@@ -115,7 +116,8 @@ describe 'The App' do
     it 'should return a win for player 2' do
       data = { "state": ['O', 'O', '', '', '', '', '', '', ''], 'turn': 'O' }
       @web_game.store({ @game_id => data })
-      expected_response = { 'win': 'Player 2 is Winner' }.to_json
+      expected_response = { "game": ['O', 'O', 'O', '', '', '', '', '', ''],
+                            'win': 'Player 2 is Winner' }.to_json
       post '/play', @body2, @request_headers
       expect(last_response).to be_ok
       expect(last_response.body).to eq(expected_response)
@@ -126,7 +128,8 @@ describe 'The App' do
         "state": ['X', 'X', '', 'O', 'O', 'X', 'O', 'X', 'O'], 'turn': 'O'
       }
       @web_game.store({ @game_id => data })
-      expected_response = { 'draw': 'Draw' }.to_json
+      expected_response = { "game": %w[X X O O O X O X O],
+                            'draw': 'Draw' }.to_json
       post '/play', @body2, @request_headers
       expect(last_response).to be_ok
       expect(last_response.body).to eq(expected_response)

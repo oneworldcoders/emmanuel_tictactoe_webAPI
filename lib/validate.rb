@@ -8,13 +8,6 @@ class Validate
     @message[:error].size <= 0
   end
 
-  def validate_startgame(game_id, web_game)
-    if web_game.game?(game_id)
-      @message[:error].store('game', "game #{game_id} already exists")
-    end
-    determine_return_status
-  end
-
   def validate_game_started(game_id, web_game)
     game_started?(game_id, web_game)
     determine_return_status

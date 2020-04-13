@@ -1,15 +1,19 @@
 require_relative 'datastore'
 require 'tic_tac_toe'
+require_relative 'player'
 
 class WebGame
   def initialize(
     datastore = Datastore.new,
     game = TicTacToe::Game.new,
-    turn = TicTacToe::Turn.new
+    turn = TicTacToe::Turn.new,
+    uuid = UUID.new
   )
     @datastore = datastore
     @game = game
     @turn = turn
+    @uuid = uuid
+    @players = [[1, Player.create_player(1)], [2, Player.create_player(2)]]
   end
 
   def load_state(game_id)
@@ -33,18 +37,26 @@ class WebGame
     store(data)
   end
 
-  def start_game(game_id)
+  def start_game(game_id = @uuid.generate)
     data = { game_id => nil }
     store(data)
+    game_id
   end
 
   def get_game(game_id)
     @datastore.load_game(game_id)
   end
 
-  def check_win(game_id, player)
+  def get_winner(game_id)
     load_state(game_id)
-    @game.check_win(player.get_mark)
+    @players.each do |player|
+      return player[0] if player[1] && @game.check_win(player[1].get_mark)
+    end
+    nil
+  end
+
+  def game_end?(game_id)
+    get_winner(game_id) || draw?(game_id)
   end
 
   def draw?(game_id)
