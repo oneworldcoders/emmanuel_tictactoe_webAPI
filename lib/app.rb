@@ -2,14 +2,18 @@ require 'tic_tac_toe'
 require 'sinatra'
 require 'json'
 require 'uuid'
+require 'sinatra/activerecord'
 
 require_relative 'player'
 require_relative 'output'
 require_relative 'validate'
 require_relative 'web_game'
+require_relative 'pg_database'
 
 class App < Sinatra::Base
-  def initialize(app = nil, web_game = WebGame.new, output = Output.new)
+  def initialize(
+    app = nil, web_game = WebGame.new(PGDatabase.new), output = Output.new
+  )
     super(app)
     @web_game = web_game
     @output = output
