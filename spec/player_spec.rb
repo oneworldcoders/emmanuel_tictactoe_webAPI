@@ -1,6 +1,3 @@
-require 'player'
-require 'rspec'
-
 RSpec.describe Player do
   it 'should create a player with an X for input 1' do
     player = Player.create_player(1)

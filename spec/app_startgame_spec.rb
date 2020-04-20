@@ -1,10 +1,4 @@
-require 'tic_tac_toe'
-require 'app'
-require 'web_game'
-require 'fake_uuid'
-
-require 'rack/test'
-require 'rspec'
+require_relative 'fake_uuid'
 
 describe 'The App' do
   include Rack::Test::Methods

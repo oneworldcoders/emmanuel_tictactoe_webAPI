@@ -1,9 +1,3 @@
-require 'app'
-require 'web_game'
-
-require 'rack/test'
-require 'rspec'
-
 describe 'The App' do
   include Rack::Test::Methods
 
@@ -12,7 +6,7 @@ describe 'The App' do
   end
 
   before(:each) do
-    @game_id = 0
+    @game_id = '0'
     @web_game = WebGame.new
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end

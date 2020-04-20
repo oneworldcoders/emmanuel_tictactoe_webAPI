@@ -9,6 +9,10 @@ services:
   - postgresql
 
 before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
+  - psql -c 'create database tictactoe_test;' -U postgres
 
 before_install: gem install bundler -v 1.17.2
+
+script:
+  - bundle exec rake db:migrate RACK_ENV=test
+  - bundle exec rspec

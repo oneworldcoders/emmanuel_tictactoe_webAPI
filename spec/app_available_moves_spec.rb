@@ -1,9 +1,3 @@
-require 'app'
-require 'web_game'
-
-require 'rack/test'
-require 'rspec'
-
 describe 'The App' do
   include Rack::Test::Methods
 
@@ -12,14 +6,14 @@ describe 'The App' do
   end
 
   before(:each) do
-    @game_id = 0
+    @game_id = '0'
     @web_game = WebGame.new
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
 
   context 'Available moves' do
     it 'should return array of 1 to 9 for new game' do
-      @web_game.store({ 0 => {} })
+      @web_game.store({ @game_id => {} })
       get "/available_moves/#{@game_id}", nil, @request_headers
       response = { 'available_moves': [1, 2, 3, 4, 5, 6, 7, 8, 9] }.to_json
       expect(last_response).to be_ok

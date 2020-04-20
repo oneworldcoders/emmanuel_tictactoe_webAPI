@@ -45,7 +45,7 @@ class App < Sinatra::Base
   end
 
   get '/available_moves/:game_id' do
-    game_id = params['game_id'].to_i
+    game_id = params['game_id']
     unless @validate.validate_game_started(game_id, @web_game)
       return @validate.message
     end
@@ -63,7 +63,7 @@ class App < Sinatra::Base
   end
 
   get '/turn/:game_id' do
-    game_id = params['game_id'].to_i
+    game_id = params['game_id']
     return @validate.message unless @validate.validate_turns(game_id, @web_game)
 
     return { turn: @web_game.load_turn(game_id) }

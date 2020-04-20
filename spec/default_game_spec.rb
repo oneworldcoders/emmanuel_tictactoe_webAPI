@@ -1,6 +1,3 @@
-require 'default_game'
-require 'rspec'
-
 RSpec.describe DefaultGame do
   context 'Load data' do
     before(:each) do

@@ -1,19 +1,9 @@
 development:
   adapter: postgresql
   host: localhost
-  # username: <%= ENV['PG_USER'] %>
-  # password: <%= ENV['PG_PASS'] %>
   database: tictactoe
   encoding: unicode
 
-# production:
-#   adapter: postgresql
-#   # host: <%= ENV['DATABASE_HOST'] %>
-#   # username: <%= ENV['DATABASE_USER'] %>
-#   # password: <%= ENV['DATABASE_PASSWORD'] %>
-#   # database: <%= ENV['DATABASE_NAME'] %>
-#   encoding: unicode
-
 test:
   adapter: postgresql
-  database: travis_ci_test
+  database: tictactoe_test

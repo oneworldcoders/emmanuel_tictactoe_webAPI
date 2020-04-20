@@ -1,6 +1,3 @@
-require 'rspec'
-require 'datastore'
-
 describe Datastore do
   include_examples 'datastore interface'
 

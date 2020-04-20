@@ -1,9 +1,6 @@
-require 'rspec'
-require 'web_game'
-require 'fake_datastore'
-require 'fake_uuid'
-require 'fakegame'
-require 'tic_tac_toe'
+require_relative 'fake_datastore'
+require_relative 'fake_uuid'
+require_relative 'fakegame'
 
 describe 'WebGame' do
   context 'Loading game state' do

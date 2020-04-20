@@ -1,9 +1,3 @@
-require 'app'
-require 'web_game'
-
-require 'rack/test'
-require 'rspec'
-
 describe 'The App' do
   include Rack::Test::Methods
 
