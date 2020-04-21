@@ -1,4 +1,4 @@
-describe 'The App' do
+describe 'Games Endpoint' do
   include Rack::Test::Methods
 
   def app
@@ -11,7 +11,7 @@ describe 'The App' do
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
 
-  context 'games' do
+  context 'Get all games' do
     before(:each) do
       @default_data = {
         'state': ['', '', '', '', '', '', '', '', ''],

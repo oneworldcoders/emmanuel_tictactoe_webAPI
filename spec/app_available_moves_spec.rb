@@ -1,4 +1,4 @@
-describe 'The App' do
+describe 'Available Moves Endpoint' do
   include Rack::Test::Methods
 
   def app
@@ -11,7 +11,7 @@ describe 'The App' do
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
 
-  context 'Available moves' do
+  context 'Get available moves' do
     it 'should return array of 1 to 9 for new game' do
       @web_game.store({ @game_id => {} })
       get "/available_moves/#{@game_id}", nil, @request_headers

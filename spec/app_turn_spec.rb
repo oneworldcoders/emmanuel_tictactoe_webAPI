@@ -1,4 +1,4 @@
-describe 'The App' do
+describe 'Turn Endpoint' do
   include Rack::Test::Methods
 
   def app
@@ -11,7 +11,7 @@ describe 'The App' do
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
 
-  describe 'Turns' do
+  describe 'Get current turn' do
     context 'validation' do
       it 'shoud validates turn, only play on your turn' do
         body = {

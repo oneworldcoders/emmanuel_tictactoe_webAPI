@@ -2,7 +2,6 @@ require 'tic_tac_toe'
 require 'sinatra'
 require 'json'
 require 'uuid'
-require 'sinatra/activerecord'
 
 require_relative 'player'
 require_relative 'output'
