@@ -1,5 +1,3 @@
-<%= p ENV['RACK_ENV'] %>
-
 default: &default
   adapter: postgresql
   encoding: unicode
