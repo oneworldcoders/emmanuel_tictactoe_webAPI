@@ -1,0 +1,9 @@
+development:
+  adapter: postgresql
+  host: localhost
+  database: tictactoe
+  encoding: unicode
+
+test:
+  adapter: postgresql
+  database: tictactoe_test

@@ -1,10 +1,4 @@
-require 'app'
-require 'web_game'
-
-require 'rack/test'
-require 'rspec'
-
-describe 'The App' do
+describe 'Play Endpoint' do
   include Rack::Test::Methods
 
   def app
@@ -21,7 +15,7 @@ describe 'The App' do
     @web_game.clear_all
   end
 
-  context 'Play' do
+  context 'Make a move' do
     before(:each) do
       @body1 = { "game_id": @game_id, "player": 1, "position": 1 }.to_json
       @body2 = { "game_id": @game_id, "player": 2, "position": 3 }.to_json
@@ -136,13 +130,13 @@ describe 'The App' do
     end
 
     it 'should be able to handle 2 different games' do
-      game_id1 = 1
-      game_id2 = 2
+      game_id1 = "1"
+      game_id2 = "2"
 
       body1 = { "game_id": game_id1, "player": 1, "position": 1 }.to_json
       body2 = { "game_id": game_id2, "player": 2, "position": 2 }.to_json
 
-      @web_game.store({ game_id1 => {} })
+      @web_game.store({ game_id1 => nil })
       @web_game.store({ game_id2 => { 'turn': 'O' } })
 
       response1 = post '/play', body1, @request_headers

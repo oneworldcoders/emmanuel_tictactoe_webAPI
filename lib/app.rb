@@ -7,9 +7,12 @@ require_relative 'player'
 require_relative 'output'
 require_relative 'validate'
 require_relative 'web_game'
+require_relative 'pg_database'
 
 class App < Sinatra::Base
-  def initialize(app = nil, web_game = WebGame.new, output = Output.new)
+  def initialize(
+    app = nil, web_game = WebGame.new(PGDatabase.new), output = Output.new
+  )
     super(app)
     @web_game = web_game
     @output = output
@@ -41,7 +44,7 @@ class App < Sinatra::Base
   end
 
   get '/available_moves/:game_id' do
-    game_id = params['game_id'].to_i
+    game_id = params['game_id']
     unless @validate.validate_game_started(game_id, @web_game)
       return @validate.message
     end
@@ -59,7 +62,7 @@ class App < Sinatra::Base
   end
 
   get '/turn/:game_id' do
-    game_id = params['game_id'].to_i
+    game_id = params['game_id']
     return @validate.message unless @validate.validate_turns(game_id, @web_game)
 
     return { turn: @web_game.load_turn(game_id) }

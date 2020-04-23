@@ -1,6 +1,4 @@
-require 'fake_output'
-require 'output'
-require 'tic_tac_toe'
+require_relative 'fake_output'
 
 describe 'Output' do
   it 'should call welcome' do

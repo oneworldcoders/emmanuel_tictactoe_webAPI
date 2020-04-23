@@ -1,9 +1,9 @@
-require_relative 'default_game'
+require_relative '../serializers/game_serializer'
 
 class Datastore
-  def initialize(data = {})
+  def initialize(data = {}, serializer = GameSerializer.new)
     @data = data
-    @default_game = DefaultGame.new
+    @game_serializer = serializer
   end
 
   def clear
@@ -18,16 +18,16 @@ class Datastore
     if value
       @data.store(key, value)
     else
-      @data.store(key, @default_game.load_game(key))
+      @data.store(key, @game_serializer.serialize())
     end
   end
 
   def load_game(game_id)
-    @data.dig(game_id) || @default_game.load_game(game_id)
+    @data.dig(game_id) || @game_serializer.serialize()
   end
 
   def load(game_id, key)
-    @data.dig(game_id, key) || @default_game.load_game(game_id)[key]
+    @data.dig(game_id, key) || @game_serializer.serialize()[key]
   end
 
   def load_all

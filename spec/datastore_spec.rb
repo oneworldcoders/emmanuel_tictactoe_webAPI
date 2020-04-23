@@ -1,7 +1,6 @@
-require 'rspec'
-require 'datastore'
+describe Datastore do
+  include_examples 'datastore interface'
 
-describe 'Datastore' do
   context 'load all' do
     it 'returns empty for new store' do
       datastore = Datastore.new

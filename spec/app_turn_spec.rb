@@ -1,10 +1,4 @@
-require 'app'
-require 'web_game'
-
-require 'rack/test'
-require 'rspec'
-
-describe 'The App' do
+describe 'Turn Endpoint' do
   include Rack::Test::Methods
 
   def app
@@ -12,12 +6,12 @@ describe 'The App' do
   end
 
   before(:each) do
-    @game_id = 0
+    @game_id = '0'
     @web_game = WebGame.new
     @request_headers = { 'CONTENT_TYPE' => 'application/json' }
   end
 
-  describe 'Turns' do
+  describe 'Get current turn' do
     context 'validation' do
       it 'shoud validates turn, only play on your turn' do
         body = {

@@ -1,12 +1,6 @@
-require 'tic_tac_toe'
-require 'app'
-require 'web_game'
-require 'fake_uuid'
+require_relative 'fake_uuid'
 
-require 'rack/test'
-require 'rspec'
-
-describe 'The App' do
+describe 'Startgame Endpoint' do
   include Rack::Test::Methods
 
   def app
@@ -28,13 +22,12 @@ describe 'The App' do
     @web_game.clear_all
   end
 
-  context 'Start Game' do
+  context 'Starting a Game' do
     before(:each) do
-      @body = { 'game_id': @game_id }.to_json
-      post '/startgame', @body, @request_headers
+      post '/startgame', nil, @request_headers
     end
 
-    it 'responds with the game data' do
+    it 'responds with the default game data' do
       expected_response = {
         'game_data' => {
           @game_id.to_s => {
