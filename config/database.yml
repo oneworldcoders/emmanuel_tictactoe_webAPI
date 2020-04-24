@@ -14,5 +14,5 @@ test:
   database: tictactoe_test
 
 production:
-  <<: *default
-  database: tictactoe_prod
+  url: <%= URI.parse(ENV.fetch('DATABASE_URL', '')) %>
+  encoding: 'unicode'

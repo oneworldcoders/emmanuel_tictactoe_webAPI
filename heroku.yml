@@ -2,7 +2,10 @@ setup:
   addons:
     - plan: heroku-postgresql
       as: DATABASE
-      
 build:
   docker:
     web: Dockerfile
+release:
+  command:
+    - RACK_ENV=production rake db:migrate
+  image: web
