@@ -7,11 +7,10 @@ require_relative 'player'
 require_relative 'output'
 require_relative 'validate'
 require_relative 'web_game'
-require_relative 'pg_database'
 
 class App < Sinatra::Base
   def initialize(
-    app = nil, web_game = WebGame.new(PGDatabase.new), output = Output.new
+    app = nil, web_game = WebGame.new, output = Output.new
   )
     super(app)
     @web_game = web_game
