@@ -7,5 +7,5 @@ build:
     web: Dockerfile
 release:
   command:
-    - RACK_ENV=production rake db:migrate
+    - rake db:migrate
   image: web

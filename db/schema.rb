@@ -10,15 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_04_24_142001) do
-
+ActiveRecord::Schema.define(version: 20_200_424_142_001) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension 'plpgsql'
 
-  create_table "games", force: :cascade do |t|
-    t.text "game_id", null: false
-    t.text "state", default: ["''", "''", "''", "''", "''", "''", "''", "''", "''"], array: true
-    t.text "turn", default: "X"
+  create_table 'games', force: :cascade do |t|
+    t.text 'game_id', null: false
+    t.text 'state', default: ["''", "''", "''", "''", "''", "''", "''", "''", "''"], array: true
+    t.text 'turn', default: 'X'
   end
-
 end

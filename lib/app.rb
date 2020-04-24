@@ -3,8 +3,6 @@ require 'sinatra'
 require 'json'
 require 'uuid'
 
-require_relative '../config/environments'
-
 require_relative 'player'
 require_relative 'output'
 require_relative 'validate'
@@ -35,8 +33,6 @@ class App < Sinatra::Base
   end
 
   get '/games' do
-    p '+++++++++++++++++'
-    p ENV['RACK_ENV']
     return { games: @web_game.load_all }
   end
 

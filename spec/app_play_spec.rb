@@ -130,8 +130,8 @@ describe 'Play Endpoint' do
     end
 
     it 'should be able to handle 2 different games' do
-      game_id1 = "1"
-      game_id2 = "2"
+      game_id1 = '1'
+      game_id2 = '2'
 
       body1 = { "game_id": game_id1, "player": 1, "position": 1 }.to_json
       body2 = { "game_id": game_id2, "player": 2, "position": 2 }.to_json
