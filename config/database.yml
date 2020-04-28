@@ -2,12 +2,12 @@ default: &default
   adapter: postgresql
   encoding: unicode
   
-  development:
-    <<: *default
-    host:  <%= ENV['POSTGRES_HOST'] %>
-    username: <%= ENV['POSTGRES_USER'] %>
-    password: <%= ENV['POSTGRES_PASSWORD'] %>
-    database: tictactoe
+development:
+  <<: *default
+  host:  <%= ENV['POSTGRES_HOST'] %>
+  username: <%= ENV['POSTGRES_USER'] %>
+  password: <%= ENV['POSTGRES_PASSWORD'] %>
+  database: tictactoe
     
 test:
   <<: *default
