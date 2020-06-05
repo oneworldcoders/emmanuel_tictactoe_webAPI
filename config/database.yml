@@ -1,9 +1,18 @@
-development:
+default: &default
   adapter: postgresql
-  host: localhost
-  database: tictactoe
   encoding: unicode
-
+  
+development:
+  <<: *default
+  host:  <%= ENV['POSTGRES_HOST'] %>
+  username: <%= ENV['POSTGRES_USER'] %>
+  password: <%= ENV['POSTGRES_PASSWORD'] %>
+  database: tictactoe
+    
 test:
-  adapter: postgresql
+  <<: *default
   database: tictactoe_test
+
+production:
+  url: <%= URI.parse(ENV.fetch('DATABASE_URL', '')) %>
+  encoding: 'unicode'

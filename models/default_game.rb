@@ -1,8 +1,7 @@
 require 'tic_tac_toe'
 
 class DefaultGame
-  def initialize
-  end
+  def initialize; end
 
   def state
     TicTacToe::Game.new.state

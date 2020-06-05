@@ -5,7 +5,7 @@ class GameSerializer
     @default_game = DefaultGame.new
   end
 
-  def serialize(model=nil)
+  def serialize(model = nil)
     state = model ? model.state : @default_game.state
     turn = model ? model.turn : @default_game.turn
     { state: state, turn: turn }
