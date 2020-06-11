@@ -5,7 +5,7 @@ metadata:
   labels:
     app: tictactoe
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: tictactoe
@@ -17,5 +17,8 @@ spec:
       containers:
       - name: tictactoe
         image: opix/tictactoe:latest
+        env:
+          - name: PORT
+            value: "9292"
         ports:
-        - containerPort: 80
+        - containerPort: 9292
