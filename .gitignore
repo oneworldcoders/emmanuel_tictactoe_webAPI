@@ -15,6 +15,3 @@
 # personal files
 .pg_database.rb
 .pg_database_spec.rb
-
-# pem files
-/tictactoe-ubuntu-keypair.pem
